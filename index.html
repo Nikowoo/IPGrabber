@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: monospace;
+      background: #111;
+      color: #0f0;
+      padding: 20px;
+    }
+    pre {
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h2>Visitor Information</h2>
+  <pre id="output">Loading...</pre>
+
+  <script>
+    function getBrowserInfo() {
+      const ua = navigator.userAgent;
+
+      let browser = "Unknown";
+      if (ua.includes("Firefox")) browser = "Firefox";
+      else if (ua.includes("Edg")) browser = "Edge";
+      else if (ua.includes("Chrome")) browser = "Chrome";
+      else if (ua.includes("Safari")) browser = "Safari";
+
+      let os = "Unknown";
+      if (ua.includes("Win")) os = "Windows";
+      else if (ua.includes("Mac")) os = "MacOS";
+      else if (ua.includes("Linux")) os = "Linux";
+      else if (ua.includes("Android")) os = "Android";
+      else if (ua.includes("iPhone")) os = "iOS";
+
+      return { browser, os };
+    }
+
+    async function collectInfo() {
+      const serverData = await fetch("/api/info").then(r => r.json());
+      const { browser, os } = getBrowserInfo();
+
+      const clientData = {
+        browser,
+        os,
+        screen: {
+          width: screen.width,
+          height: screen.height
+        },
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        language: navigator.language,
+        cookies_enabled: navigator.cookieEnabled,
+        online: navigator.onLine,
+        referrer: document.referrer || "None",
+        device_memory_gb: navigator.deviceMemory || "Unknown",
+        cpu_cores: navigator.hardwareConcurrency || "Unknown",
+        local_time: new Date().toString()
+      };
+
+      const finalData = {
+        ...serverData,
+        client: clientData
+      };
+
+      document.getElementById("output").textContent =
+        JSON.stringify(finalData, null, 2);
+    }
+
+    collectInfo();
+  </script>
+</body>
+</html>
