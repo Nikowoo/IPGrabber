@@ -4,13 +4,10 @@ export default function handler(req, res) {
     req.socket?.remoteAddress ||
     "Unknown";
 
-  const data = {
+  res.status(200).json({
     ip_address: ip,
     user_agent: req.headers["user-agent"] || "Unknown",
     accept_language: req.headers["accept-language"] || "Unknown",
-    time_visited: new Date().toISOString(),
-  };
-
-  res.setHeader("Content-Type", "application/json");
-  res.status(200).json(data);
+    time_visited: new Date().toISOString()
+  });
 }
