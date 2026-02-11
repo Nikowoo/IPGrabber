@@ -1,13 +1,9 @@
-export default function handler(req, res) {
-  const ip =
-    req.headers["x-forwarded-for"]?.split(",")[0] ||
-    req.socket?.remoteAddress ||
-    "Unknown";
-
-  res.status(200).json({
-    ip_address: ip,
-    user_agent: req.headers["user-agent"] || "Unknown",
-    accept_language: req.headers["accept-language"] || "Unknown",
-    time_visited: new Date().toISOString()
-  });
+if (WEBHOOK_URL.startsWith("http")) {
+  fetch(WEBHOOK_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      content: "```json\n" + JSON.stringify(payload, null, 2) + "\n```"
+    })
+  }).catch(() => {});
 }
