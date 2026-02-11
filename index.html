@@ -38,7 +38,7 @@
     }
 
     async function collectInfo() {
-      const serverData = await fetch("/API/info").then(r => r.json());
+      const serverData = await fetch("/api/info").then(r => r.json());
       const { browser, os } = getBrowserInfo();
 
       const clientData = {
