@@ -1,28 +1,16 @@
-export default async function handler(req, res) {
-    try {
-        const ip =
-            req.headers["x-forwarded-for"]?.split(",")[0] ||
-            req.socket?.remoteAddress ||
-            "unknown";
-        const ipRes = await fetch(`https://ipapi.co/${ip}/json/`);
-        const ipData = await ipRes.json();
+export default function handler(req, res) {
+  const ip =
+    req.headers["x-forwarded-for"]?.split(",")[0] ||
+    req.socket?.remoteAddress ||
+    "Unknown";
 
-        const data = {
-            ip: ip,
-            location: {
-                city: ipData.city,
-                region: ipData.region,
-                country: ipData.country_name,
-                latitude: ipData.latitude,
-                longitude: ipData.longitude
-            },
-            isp: ipData.org,
-            browser: req.headers["user-agent"],
-            timestamp: new Date().toISOString()
-        };
+  const data = {
+    ip_address: ip,
+    user_agent: req.headers["user-agent"] || "Unknown",
+    accept_language: req.headers["accept-language"] || "Unknown",
+    time_visited: new Date().toISOString(),
+  };
 
-        res.status(200).json(data);
-    } catch (err) {
-        res.status(500).json({ error: "Failed to retrieve data" });
-    }
+  res.setHeader("Content-Type", "application/json");
+  res.status(200).json(data);
 }
